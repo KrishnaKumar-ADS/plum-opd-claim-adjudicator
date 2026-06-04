@@ -1,0 +1,65 @@
+# ──────────────────────────────────────────────────────────────────────────
+# Plum OPD Claim Adjudicator – Hugging Face Spaces Dockerfile
+# Multi-stage: Build React frontend → Serve with FastAPI backend
+# ──────────────────────────────────────────────────────────────────────────
+
+# ── Stage 1: Build React frontend ─────────────────────────────────────────
+FROM node:20-alpine AS frontend-builder
+
+WORKDIR /build
+COPY frontend/package.json frontend/package-lock.json ./
+RUN npm ci --production=false
+
+COPY frontend/ .
+
+# The API is on the same origin in HF Spaces, so no separate URL needed
+ENV VITE_API_URL=""
+RUN npm run build
+
+
+# ── Stage 2: Python backend + serve static frontend ──────────────────────
+FROM python:3.11-slim
+
+# System deps
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    libpq-dev \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Install Python dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir --upgrade pip \
+    && pip install --no-cache-dir -r requirements.txt
+
+# Copy application source
+COPY backend/ ./backend/
+COPY prompts/ ./prompts/
+COPY data/ ./data/
+
+# Copy built React frontend from Stage 1
+COPY --from=frontend-builder /build/dist ./frontend_static
+
+# Create writable directories
+RUN mkdir -p data/claims/uploads data/vector_store data/config /tmp/claims/uploads /tmp/vector_store
+
+# ── HF Spaces requires user with uid 1000 ────────────────────────────────
+RUN useradd -m -u 1000 user
+RUN chown -R user:user /app
+USER user
+
+ENV HOME=/home/user \
+    PATH=/home/user/.local/bin:$PATH \
+    PYTHONPATH=/app \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PORT=7860
+
+EXPOSE 7860
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
+    CMD curl -f http://localhost:7860/health || exit 1
+
+CMD ["sh", "-c", "uvicorn backend.main:app --host 0.0.0.0 --port 7860 --workers 2"]

@@ -20,15 +20,15 @@ class Settings(BaseSettings):
     mistral_model: str = "mistral-small-latest"
 
     # Database
-    database_url: str = "sqlite:////tmp/claims.db" if os.environ.get("VERCEL") else "sqlite:///./data/claims.db"
+    database_url: str = "sqlite:////tmp/claims.db" if os.environ.get("VERCEL") or os.environ.get("SPACE_ID") else "sqlite:///./data/claims.db"
 
     # Vector Store
-    chroma_persist_dir: str = "/tmp/vector_store" if os.environ.get("VERCEL") else "./data/vector_store"
+    chroma_persist_dir: str = "/tmp/vector_store" if os.environ.get("VERCEL") or os.environ.get("SPACE_ID") else "./data/vector_store"
 
     # Application
     log_level: str = "INFO"
     cors_origins: str = "http://localhost:5173,http://localhost:3000"
-    upload_dir: str = "/tmp/claims/uploads" if os.environ.get("VERCEL") else "./data/claims/uploads"
+    upload_dir: str = "/tmp/claims/uploads" if os.environ.get("VERCEL") or os.environ.get("SPACE_ID") else "./data/claims/uploads"
     max_file_size_mb: int = 10
 
     # Paths
