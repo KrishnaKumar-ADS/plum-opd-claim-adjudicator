@@ -217,7 +217,9 @@ def submit_claim_json(claim_data: dict, db: Session = Depends(get_db)):
                 inner[meta_key] = claim_data[meta_key]
         claim_data = inner
 
-    claim_id = claim_data.get("claim_id") or claim_data.get("case_id") or f"CLM_{uuid.uuid4().hex[:5].upper()}"
+    # Always generate a unique claim_id to avoid duplicate key errors
+    # on resubmission.  Preserve any incoming case_id for reference.
+    claim_id = f"CLM_{uuid.uuid4().hex[:6].upper()}"
     claim_data["claim_id"] = claim_id
 
     # ── Auto-resolve member_join_date from MOCK_MEMBERS ──────────────────
