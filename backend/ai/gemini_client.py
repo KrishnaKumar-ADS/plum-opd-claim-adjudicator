@@ -24,8 +24,8 @@ class AIClient:
     MISTRAL_BASE_URL = "https://api.mistral.ai/v1"
 
     def __init__(self):
-        # 10s connection timeout, 30s read timeout (max wait for a response)
-        self.http_client = httpx.Client(timeout=httpx.Timeout(timeout=30.0, connect=10.0))
+        # 10s connection timeout, 120s read timeout (vision OCR can be slow for large documents)
+        self.http_client = httpx.Client(timeout=httpx.Timeout(timeout=120.0, connect=10.0))
 
     def generate_text(
         self,
