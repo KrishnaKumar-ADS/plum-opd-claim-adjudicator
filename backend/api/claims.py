@@ -201,15 +201,55 @@ async def submit_claim(
 
 @router.post("/json")
 def submit_claim_json(claim_data: dict, db: Session = Depends(get_db)):
-    """Submit claim via JSON (for test cases and API integrations)."""
-    claim_id = claim_data.get("claim_id", f"CLM_{uuid.uuid4().hex[:5].upper()}")
+    """Submit claim via JSON (for test cases and API integrations).
+
+    Accepts both flat claim format:
+        {"member_id": "EMP001", "claim_amount": 1500, ...}
+    And wrapped test-case format:
+        {"input_data": {"member_id": "EMP001", ...}, "expected_result": {...}}
+    """
+    # ── Unwrap test-case envelope if present ──────────────────────────────
+    if "input_data" in claim_data and isinstance(claim_data["input_data"], dict):
+        inner = claim_data["input_data"]
+        # Carry over case-level metadata that callers might expect in the response
+        for meta_key in ("case_id", "case_name"):
+            if meta_key in claim_data and meta_key not in inner:
+                inner[meta_key] = claim_data[meta_key]
+        claim_data = inner
+
+    claim_id = claim_data.get("claim_id") or claim_data.get("case_id") or f"CLM_{uuid.uuid4().hex[:5].upper()}"
     claim_data["claim_id"] = claim_id
+
+    # ── Auto-resolve member_join_date from MOCK_MEMBERS ──────────────────
+    member_name = claim_data.get("member_name", "")
+    member_id = claim_data.get("member_id", "")
+    member_join_date = claim_data.get("member_join_date")
+
+    if not member_join_date and member_name:
+        match = MOCK_MEMBERS.get(member_name.lower().strip())
+        if match:
+            member_join_date = match["join_date"]
+            if not member_id:
+                member_id = match["id"]
+
+    if not member_join_date and member_id:
+        member_id_upper = member_id.upper().strip()
+        for _, val in MOCK_MEMBERS.items():
+            if val["id"] == member_id_upper:
+                member_join_date = val["join_date"]
+                break
+
+    if not member_join_date:
+        member_join_date = "2024-01-01"
+
+    claim_data["member_join_date"] = member_join_date
+    claim_data["member_id"] = member_id or "EMP_TEMP"
 
     claim = Claim(
         claim_id=claim_id,
         member_id=claim_data.get("member_id", ""),
-        member_name=claim_data.get("member_name", ""),
-        member_join_date=claim_data.get("member_join_date"),
+        member_name=member_name,
+        member_join_date=member_join_date,
         treatment_date=claim_data.get("treatment_date", ""),
         claim_amount=claim_data.get("claim_amount", 0),
         hospital=claim_data.get("hospital", ""),
