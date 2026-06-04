@@ -43,5 +43,6 @@ export const getEvalResults = () => api.get('/api/evaluation/results');
 // Policy Configuration
 export const getPolicy = () => api.get('/api/admin/policy');
 export const updatePolicy = (data) => api.put('/api/admin/policy', data);
+export const getPolicyTerms = () => api.get('/api/admin/policy-terms');
 
 export default api;

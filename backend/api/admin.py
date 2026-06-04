@@ -191,3 +191,14 @@ def get_policy_history():
         "current": _load_policy_config(),
         "defaults": DEFAULT_POLICY_CONFIG,
     }
+
+
+@router.get("/policy-terms")
+def get_policy_terms():
+    """Get the active static policy terms (coverage, waiting periods, exclusions)."""
+    from backend.utils.parsers import load_json_file
+    settings = get_settings()
+    terms = load_json_file(settings.policy_terms_path)
+    if not terms:
+        raise HTTPException(status_code=404, detail="Policy terms file not found")
+    return terms
