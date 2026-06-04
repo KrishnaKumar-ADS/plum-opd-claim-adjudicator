@@ -51,7 +51,7 @@ RUN mkdir -p data/claims/uploads data/vector_store data/config /tmp/claims/uploa
 
 # ── HF Spaces requires user with uid 1000 ────────────────────────────────
 RUN useradd -m -u 1000 user
-RUN chown -R user:user /app
+RUN chown -R user:user /app /tmp/claims /tmp/vector_store
 USER user
 
 ENV HOME=/home/user \
