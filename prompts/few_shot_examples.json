@@ -1,0 +1,47 @@
+{
+  "extraction_examples": [
+    {
+      "input": "Dr. Sharma, Reg: KA/45678/2015, Date: 01/11/2024, Patient: Rajesh Kumar, Diagnosis: Viral fever, Rx: Paracetamol 650mg 1-0-1 x 5 days, Vitamin C 500mg 1-0-0 x 10 days. Consultation Fee: Rs 1000, Tests: CBC Rs 300, Dengue test Rs 200. Total: Rs 1500",
+      "output": {
+        "doctor_name": "Dr. Sharma",
+        "doctor_registration": "KA/45678/2015",
+        "treatment_date": "2024-11-01",
+        "patient_name": "Rajesh Kumar",
+        "diagnosis": "Viral fever",
+        "medicines": ["Paracetamol 650mg", "Vitamin C 500mg"],
+        "tests": ["CBC", "Dengue test"],
+        "bill_breakdown": {"consultation_fee": 1000, "diagnostic_tests": 500},
+        "total_amount": 1500
+      }
+    },
+    {
+      "input": "Apollo Dental Clinic. Dr. Patel MH/23456/2018. Patient: Priya Singh. Diagnosis: Tooth decay. Procedures: Root canal Rs 8000, Teeth whitening Rs 4000. Total: Rs 12000",
+      "output": {
+        "doctor_name": "Dr. Patel",
+        "doctor_registration": "MH/23456/2018",
+        "patient_name": "Priya Singh",
+        "diagnosis": "Tooth decay requiring root canal",
+        "procedures": ["Root canal treatment", "Teeth whitening"],
+        "bill_breakdown": {"root_canal": 8000, "teeth_whitening": 4000},
+        "total_amount": 12000
+      }
+    }
+  ],
+  "adjudication_examples": [
+    {
+      "claim": {"diagnosis": "Viral fever", "amount": 1500, "treatments": ["Consultation", "Blood tests"]},
+      "decision": "APPROVED",
+      "reasoning": "Standard consultation for viral fever. All documents valid. Amount within limits. Treatment medically necessary."
+    },
+    {
+      "claim": {"diagnosis": "Tooth decay", "amount": 12000, "treatments": ["Root canal", "Teeth whitening"]},
+      "decision": "PARTIAL",
+      "reasoning": "Root canal covered (₹8000). Teeth whitening excluded as cosmetic procedure (₹4000 rejected)."
+    },
+    {
+      "claim": {"diagnosis": "Obesity", "amount": 8000, "treatments": ["Bariatric consultation", "Diet plan"]},
+      "decision": "REJECTED",
+      "reasoning": "Weight loss treatments are explicitly excluded from policy coverage."
+    }
+  ]
+}

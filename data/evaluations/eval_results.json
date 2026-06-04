@@ -1,0 +1,117 @@
+{
+  "total": 10,
+  "correct": 10,
+  "accuracy": 1.0,
+  "results": [
+    {
+      "case_id": "TC001",
+      "case_name": "Simple Consultation - Approved",
+      "expected_decision": "APPROVED",
+      "actual_decision": "APPROVED",
+      "correct": true,
+      "expected_amount": 1350,
+      "actual_amount": 1350.0,
+      "confidence": 0.947,
+      "processing_time_ms": 1715
+    },
+    {
+      "case_id": "TC002",
+      "case_name": "Dental Treatment - Partial Approval",
+      "expected_decision": "PARTIAL",
+      "actual_decision": "PARTIAL",
+      "correct": true,
+      "expected_amount": 8000,
+      "actual_amount": 8000,
+      "confidence": 0.927,
+      "processing_time_ms": 247
+    },
+    {
+      "case_id": "TC003",
+      "case_name": "Limit Exceeded - Rejected",
+      "expected_decision": "REJECTED",
+      "actual_decision": "REJECTED",
+      "correct": true,
+      "expected_amount": null,
+      "actual_amount": 0,
+      "confidence": 0.947,
+      "processing_time_ms": 295
+    },
+    {
+      "case_id": "TC004",
+      "case_name": "Missing Documents - Rejected",
+      "expected_decision": "REJECTED",
+      "actual_decision": "REJECTED",
+      "correct": true,
+      "expected_amount": null,
+      "actual_amount": 0,
+      "confidence": 1.0,
+      "processing_time_ms": 206
+    },
+    {
+      "case_id": "TC005",
+      "case_name": "Pre-existing Condition - Waiting Period",
+      "expected_decision": "REJECTED",
+      "actual_decision": "REJECTED",
+      "correct": true,
+      "expected_amount": null,
+      "actual_amount": 0,
+      "confidence": 0.937,
+      "processing_time_ms": 185
+    },
+    {
+      "case_id": "TC006",
+      "case_name": "Alternative Medicine - Approved",
+      "expected_decision": "APPROVED",
+      "actual_decision": "APPROVED",
+      "correct": true,
+      "expected_amount": 4000,
+      "actual_amount": 4000,
+      "confidence": 0.947,
+      "processing_time_ms": 147
+    },
+    {
+      "case_id": "TC007",
+      "case_name": "Diagnostic Tests - Pre-auth Required",
+      "expected_decision": "REJECTED",
+      "actual_decision": "REJECTED",
+      "correct": true,
+      "expected_amount": null,
+      "actual_amount": 0,
+      "confidence": 0.937,
+      "processing_time_ms": 196
+    },
+    {
+      "case_id": "TC008",
+      "case_name": "Fraud Detection - Manual Review",
+      "expected_decision": "MANUAL_REVIEW",
+      "actual_decision": "MANUAL_REVIEW",
+      "correct": true,
+      "expected_amount": null,
+      "actual_amount": 4320.0,
+      "confidence": 0.897,
+      "processing_time_ms": 151
+    },
+    {
+      "case_id": "TC009",
+      "case_name": "Excluded Treatment - Rejected",
+      "expected_decision": "REJECTED",
+      "actual_decision": "REJECTED",
+      "correct": true,
+      "expected_amount": null,
+      "actual_amount": 0,
+      "confidence": 0.937,
+      "processing_time_ms": 216
+    },
+    {
+      "case_id": "TC010",
+      "case_name": "Network Hospital - Cashless Approved",
+      "expected_decision": "APPROVED",
+      "actual_decision": "APPROVED",
+      "correct": true,
+      "expected_amount": 3600,
+      "actual_amount": 3600.0,
+      "confidence": 0.947,
+      "processing_time_ms": 185
+    }
+  ]
+}

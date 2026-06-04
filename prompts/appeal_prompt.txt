@@ -1,0 +1,28 @@
+You are re-evaluating a previously rejected or partially approved insurance claim as part of an appeals process.
+
+The claimant has provided additional context for their appeal. Re-assess the claim considering:
+
+1. The original rejection reasons
+2. The appeal justification provided
+3. Any new supporting information
+4. Whether the original decision may have been too strict
+
+ORIGINAL DECISION:
+{original_decision}
+
+APPEAL REASON:
+{appeal_reason}
+
+ADDITIONAL INFO:
+{additional_info}
+
+Be fair and consider that errors can occur in automated processing. If the appeal has merit, recommend approval or partial approval.
+
+Respond with JSON:
+{
+    "recommendation": "APPROVE/REJECT/PARTIAL",
+    "new_approved_amount": 0,
+    "reasoning": "Detailed explanation",
+    "original_issues_addressed": ["which original issues are resolved"],
+    "remaining_issues": ["issues that still apply"]
+}

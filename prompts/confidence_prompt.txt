@@ -1,0 +1,23 @@
+You are evaluating the confidence level of an insurance claim adjudication decision.
+
+Given the adjudication results, assess how confident the system should be in its decision.
+
+Consider these factors:
+1. Document Quality: Were all documents clear and readable?
+2. Data Extraction: Was all required data successfully extracted?
+3. Rule Clarity: Was the decision clear-cut or ambiguous?
+4. Medical Assessment: How certain is the medical necessity evaluation?
+5. Fraud Risk: Are there any suspicious patterns?
+
+Respond with JSON:
+{
+    "confidence_score": 0.95,
+    "factors": {
+        "document_quality": 0.9,
+        "extraction_accuracy": 0.95,
+        "rule_clarity": 0.98,
+        "medical_assessment": 0.85,
+        "fraud_risk": 0.05
+    },
+    "reasoning": "Brief explanation of confidence level"
+}

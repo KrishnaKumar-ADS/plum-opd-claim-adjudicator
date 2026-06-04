@@ -1,0 +1,86 @@
+name: Tests & Lint
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  backend-test:
+    name: Backend Tests (Python 3.11)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Create required directories & mock env
+        run: |
+          mkdir -p data/policies data/rules data/evaluations data/claims data/vector_store prompts
+          # Copy fixture data so tests can find policy/rules files
+          cp policy_terms.json data/policies/ 2>/dev/null || true
+          cp adjudication_rules.md data/rules/ 2>/dev/null || true
+          cp test_cases.json data/evaluations/ 2>/dev/null || true
+
+      - name: Create .env for CI
+        run: |
+          cat > .env << 'EOF'
+          GROQ_API_KEY=${{ secrets.GROQ_API_KEY }}
+          OPENROUTER_API_KEY=${{ secrets.OPENROUTER_API_KEY }}
+          MISTRAL_API_KEY=${{ secrets.MISTRAL_API_KEY }}
+          DATABASE_URL=sqlite:///./data/claims_test.db
+          LOG_LEVEL=WARNING
+          CORS_ORIGINS=http://localhost:5173
+          EOF
+
+      - name: Lint with flake8
+        run: |
+          pip install flake8
+          # Stop on syntax errors or undefined names; warn on style
+          flake8 backend/ --count --select=E9,F63,F7,F82 --show-source --statistics
+          flake8 backend/ --count --exit-zero --max-complexity=15 --max-line-length=120 --statistics
+
+      - name: Run unit tests
+        run: python -m pytest tests/ -v --tb=short --timeout=120
+
+      - name: Check imports
+        run: python -c "from backend.main import app; print('✅ App imports OK')"
+
+  frontend-test:
+    name: Frontend Build Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Lint frontend
+        working-directory: frontend
+        run: npm run lint || true   # warn-only for now
+
+      - name: Build frontend
+        working-directory: frontend
+        run: npm run build
+        env:
+          VITE_API_URL: https://api.plum-opd.example.com
