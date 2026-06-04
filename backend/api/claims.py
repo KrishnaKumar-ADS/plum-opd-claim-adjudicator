@@ -46,107 +46,107 @@ async def submit_claim(
     db: Session = Depends(get_db),
 ):
     """Submit a new OPD claim for adjudication."""
-    claim_id = f"CLM_{uuid.uuid4().hex[:5].upper()}"
+    claim_id = f"CLM_{uuid.uuid4().hex[:6].upper()}"
 
-    # Save uploaded files
-    uploaded_files = []
-    upload_dir = os.path.join(settings.upload_dir, claim_id)
-    os.makedirs(upload_dir, exist_ok=True)
-
-    for f in files:
-        content = await f.read()
-        filepath = os.path.join(upload_dir, f.filename)
-        with open(filepath, "wb") as out:
-            out.write(content)
-        uploaded_files.append((content, f.filename))
-
-    # Pre-extract data from uploaded files if form fields are missing
-    extracted_data = {}
-    if uploaded_files and (not member_name or not treatment_date or claim_amount is None):
-        from backend.services.ocr_service import process_multiple_documents
-        from backend.services.extraction_service import extract_claim_data
-
-        logger.info(f"[{claim_id}] Pre-extracting data from {len(uploaded_files)} files...")
-        ocr_results = process_multiple_documents(uploaded_files)
-        if ocr_results:
-            combined_text = "\n\n".join(r["text"] for r in ocr_results if r.get("text"))
-            if combined_text:
-                extracted_data = extract_claim_data(combined_text) or {}
-
-    # Map extracted data to form fields if they are missing
-    ext_name = extracted_data.get("patient_name")
-    if not member_name and ext_name:
-        member_name = ext_name
-    
-    if not treatment_date and extracted_data.get("treatment_date"):
-        treatment_date = extracted_data.get("treatment_date")
-        
-    if claim_amount is None and extracted_data.get("total_amount") is not None:
-        try:
-            claim_amount = float(extracted_data.get("total_amount"))
-        except (ValueError, TypeError):
-            claim_amount = 0.0
-
-    if not hospital and extracted_data.get("clinic_name"):
-        hospital = extracted_data.get("clinic_name")
-
-    # Member and join date lookup
-    if member_name:
-        name_lower = member_name.lower().strip()
-        match = MOCK_MEMBERS.get(name_lower)
-        if match:
-            if not member_id:
-                member_id = match["id"]
-            if not member_join_date:
-                member_join_date = match["join_date"]
-
-    if not member_join_date and member_id:
-        member_id_upper = member_id.upper().strip()
-        for key, val in MOCK_MEMBERS.items():
-            if val["id"] == member_id_upper:
-                member_join_date = val["join_date"]
-                break
-
-    # Fallback default values if still missing
-    if not member_id:
-        member_id = "EMP_TEMP"
-    if not member_name:
-        member_name = "Unknown Patient"
-    if not treatment_date:
-        from datetime import datetime
-        treatment_date = datetime.now().strftime("%Y-%m-%d")
-    if claim_amount is None:
-        claim_amount = 0.0
-    if not member_join_date:
-        member_join_date = "2024-01-01"
-
-    # Parse documents JSON if provided
-    import json
-    documents = {}
-    if documents_json:
-        try:
-            documents = json.loads(documents_json)
-        except json.JSONDecodeError:
-            pass
-
-    # Create claim record
-    claim = Claim(
-        claim_id=claim_id,
-        member_id=member_id,
-        member_name=member_name,
-        member_join_date=member_join_date,
-        treatment_date=treatment_date,
-        claim_amount=claim_amount,
-        hospital=hospital or "",
-        cashless_request=1 if cashless_request else 0,
-        documents=documents,
-        status=ClaimStatus.PROCESSING.value,
-    )
-    db.add(claim)
-    db.commit()
-
-    # Run adjudication
     try:
+        # Save uploaded files
+        uploaded_files = []
+        upload_dir = os.path.join(settings.upload_dir, claim_id)
+        os.makedirs(upload_dir, exist_ok=True)
+
+        for f in files:
+            content = await f.read()
+            filepath = os.path.join(upload_dir, f.filename)
+            with open(filepath, "wb") as out:
+                out.write(content)
+            uploaded_files.append((content, f.filename))
+
+        # Pre-extract data from uploaded files if form fields are missing
+        extracted_data = {}
+        if uploaded_files and (not member_name or not treatment_date or claim_amount is None):
+            from backend.services.ocr_service import process_multiple_documents
+            from backend.services.extraction_service import extract_claim_data
+
+            logger.info(f"[{claim_id}] Pre-extracting data from {len(uploaded_files)} files...")
+            ocr_results = process_multiple_documents(uploaded_files)
+            if ocr_results:
+                combined_text = "\n\n".join(r["text"] for r in ocr_results if r.get("text"))
+                if combined_text:
+                    extracted_data = extract_claim_data(combined_text) or {}
+
+        # Map extracted data to form fields if they are missing
+        ext_name = extracted_data.get("patient_name")
+        if not member_name and ext_name:
+            member_name = ext_name
+        
+        if not treatment_date and extracted_data.get("treatment_date"):
+            treatment_date = extracted_data.get("treatment_date")
+            
+        if claim_amount is None and extracted_data.get("total_amount") is not None:
+            try:
+                claim_amount = float(extracted_data.get("total_amount"))
+            except (ValueError, TypeError):
+                claim_amount = 0.0
+
+        if not hospital and extracted_data.get("clinic_name"):
+            hospital = extracted_data.get("clinic_name")
+
+        # Member and join date lookup
+        if member_name:
+            name_lower = member_name.lower().strip()
+            match = MOCK_MEMBERS.get(name_lower)
+            if match:
+                if not member_id:
+                    member_id = match["id"]
+                if not member_join_date:
+                    member_join_date = match["join_date"]
+
+        if not member_join_date and member_id:
+            member_id_upper = member_id.upper().strip()
+            for key, val in MOCK_MEMBERS.items():
+                if val["id"] == member_id_upper:
+                    member_join_date = val["join_date"]
+                    break
+
+        # Fallback default values if still missing
+        if not member_id:
+            member_id = "EMP_TEMP"
+        if not member_name:
+            member_name = "Unknown Patient"
+        if not treatment_date:
+            from datetime import datetime
+            treatment_date = datetime.now().strftime("%Y-%m-%d")
+        if claim_amount is None:
+            claim_amount = 0.0
+        if not member_join_date:
+            member_join_date = "2024-01-01"
+
+        # Parse documents JSON if provided
+        import json
+        documents = {}
+        if documents_json:
+            try:
+                documents = json.loads(documents_json)
+            except json.JSONDecodeError:
+                pass
+
+        # Create claim record
+        claim = Claim(
+            claim_id=claim_id,
+            member_id=member_id,
+            member_name=member_name,
+            member_join_date=member_join_date,
+            treatment_date=treatment_date,
+            claim_amount=claim_amount,
+            hospital=hospital or "",
+            cashless_request=1 if cashless_request else 0,
+            documents=documents,
+            status=ClaimStatus.PROCESSING.value,
+        )
+        db.add(claim)
+        db.commit()
+
+        # Run adjudication
         claim_data = {
             "claim_id": claim_id,
             "member_id": member_id,
@@ -192,10 +192,18 @@ async def submit_claim(
 
         return {"claim_id": claim_id, "status": "adjudicated", "decision": decision.to_dict()}
 
+    except HTTPException:
+        raise
     except Exception as e:
-        logger.error(f"Adjudication failed for {claim_id}: {e}")
-        claim.status = "ERROR"
-        db.commit()
+        import traceback
+        logger.error(f"Claim submission failed for {claim_id}: {traceback.format_exc()}")
+        try:
+            claim_obj = db.query(Claim).filter(Claim.claim_id == claim_id).first()
+            if claim_obj:
+                claim_obj.status = "ERROR"
+                db.commit()
+        except Exception:
+            pass
         raise HTTPException(status_code=500, detail=f"Adjudication failed: {str(e)}")
 
 
