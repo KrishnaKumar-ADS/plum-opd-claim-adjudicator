@@ -3,6 +3,7 @@
 An intelligent **Outpatient Department (OPD)** insurance claim adjudication system that automates verification, policy validation, fraud checking, and decision-making for insurance claims using a hybrid pipeline of **LLMs**, **Retrieval-Augmented Generation (RAG)**, and a **deterministic rules engine**.
 
 Youtube Link - https://www.youtube.com/watch?v=b5NIg1BQmQM
+
 Demo Link - https://huggingface.co/spaces/krishnakumar19/plum-opd-claim-adjudicator
 
 ---
